@@ -49,7 +49,7 @@ def graph_to_matrix(
         bfs_order_map = {bfs_seq[i]: i for i in range(n)}
         graph = nx.relabel_nodes(graph, bfs_order_map)
 
-    # 3D adjacecny matrix in case of edge_features (each A[i, j] is a len_edge_vec size vector)
+    # 3D adjacency matrix in case of edge_features (each A[i, j] is a len_edge_vec size vector)
     adj_mat_2d = torch.ones((n, num_nodes_to_consider))
     adj_mat_2d.tril_(diagonal=-1)
     adj_mat_3d = torch.zeros((n, num_nodes_to_consider, len(edge_map)))

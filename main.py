@@ -21,9 +21,13 @@ if __name__ == '__main__':
 
     graphs = create_graphs(args)
 
-    random.shuffle(graphs)
-    graphs_train = graphs[: int(0.80 * len(graphs))]
-    graphs_validate = graphs[int(0.80 * len(graphs)): int(0.90 * len(graphs))]
+    if args.pre_train:
+        random.shuffle(graphs)
+        graphs_train = graphs[: int(0.80 * len(graphs))]
+        graphs_validate = graphs[int(0.80 * len(graphs)): int(0.90 * len(graphs))]
+    else:
+        graphs_train = graphs
+        graphs_validate = [graphs_train[0]] # This is useless, but the code requires it
 
     # show graphs statistics
     print('Model:', args.note)
@@ -57,21 +61,22 @@ if __name__ == '__main__':
     print('Time taken to calculate max_prev_node = {:.3f}s'.format(
         end - start))
 
-    random_bfs = True
-    dataset_train = Graph_Adj_Matrix_from_file(
-        args, graphs_train, feature_map, random_bfs)
-    dataset_validate = Graph_Adj_Matrix_from_file(
-        args, graphs_validate, feature_map, random_bfs)
-    
-    dataloader_train = DataLoader(
-        dataset_train, batch_size=args.batch_size, shuffle=True, drop_last=True,
-        num_workers=args.num_workers)
-    dataloader_validate = DataLoader(
-        dataset_validate, batch_size=args.batch_size, shuffle=False,
-        num_workers=args.num_workers)
-
     model = create_model(args, feature_map)
 
-    print("Starting training...")
+    if args.pre_train:
+        random_bfs = True
+        dataset_train = Graph_Adj_Matrix_from_file(
+            args, graphs_train, feature_map, random_bfs)
+        dataset_validate = Graph_Adj_Matrix_from_file(
+            args, graphs_validate, feature_map, random_bfs)
+        
+        dataloader_train = DataLoader(
+            dataset_train, batch_size=args.batch_size, shuffle=True, drop_last=True,
+            num_workers=args.num_workers)
+        dataloader_validate = DataLoader(
+            dataset_validate, batch_size=args.batch_size, shuffle=False,
+            num_workers=args.num_workers)
 
-    train(args, dataloader_train, model, feature_map, dataloader_validate)
+        print("Starting training...")
+
+        train(args, dataloader_train, model, feature_map, dataloader_validate)

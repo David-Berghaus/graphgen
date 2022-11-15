@@ -99,6 +99,11 @@ def get_random_bfs_seq(graph):
     # Construct bfs ordering starting from a random node
     start_id = torch.randint(0, n, ()).item()
     bfs_seq = get_bfs_seq(G, start_id)
+    if len(bfs_seq) != n:
+        print("G.is_connected() = ", nx.is_connected(G))
+        print("bfs_seq", bfs_seq)
+        print("len(bfs_seq)", len(bfs_seq))
+        print("n", n)
 
     return [perm[bfs_seq[i]] for i in range(n)]
 

@@ -33,6 +33,31 @@ def check_graph_size(
 
     return True
 
+def produce_random_graphs(output_path, num_graphs, num_nodes, n_edge_labels, n_node_labels):
+    """
+    Compute random graphs and store them in output_path
+    :param output_path: Path to store networkx graphs
+    :param num_graphs: Number of graphs to be produced
+    :param num_nodes: Number of nodes in each graph
+    :param n_edge_labels: Number of edge labels
+    :param n_node_labels: Number of node labels
+    """
+    for i in range(num_graphs):
+        G = nx.Graph(id=i)
+        for j in range(num_nodes):
+            G.add_node(j, label=random.randint(0, n_node_labels - 1))
+        for j in range(num_nodes-1):
+            labels = [random.randint(0, n_edge_labels - 1) for _ in range(j + 1, num_nodes)]
+            if all(label == 0 for label in labels): #We don't want all edges to be 0
+                labels[0] = 1
+            for k in range(j + 1, num_nodes):
+                label = labels[k-(j+1)]
+                if label != 0: # 0 is the label for no edge
+                    G.add_edge(j, k, label=label)
+        
+        with open(os.path.join(output_path, 'graph' + str(i) + '.dat'), 'wb') as f:
+            pickle.dump(G, f)
+    return num_graphs
 
 def produce_graphs_from_raw_format(
     inputfile, output_path, num_graphs=None, min_num_nodes=None,
@@ -189,9 +214,43 @@ def produce_random_walk_sampled_graphs(
 
     return count
 
+def create_random_graphs(args):
+    if 'Ramsey' == args.graph_type:
+        base_path = os.path.join(args.dataset_path, 'Ramsey/')
+    else:
+        print('Dataset - {} is not valid'.format(args.graph_type))
+        exit()
+
+    args.current_dataset_path = os.path.join(base_path, 'graphs/')
+
+    args.current_processed_dataset_path = args.current_dataset_path
+
+    if args.produce_graphs:
+        mkdir(args.current_dataset_path)
+
+        if args.graph_type in ['Ramsey']:
+            count = produce_random_graphs(
+                args.current_dataset_path, args.num_graphs,
+                args.num_nodes, args.num_edge_labels, args.num_node_labels)
+
+        print('Graphs produced', count)
+    else:
+        count = len([name for name in os.listdir(
+            args.current_dataset_path) if name.endswith(".dat")])
+        print('Graphs counted', count)
+
+    # Produce feature map
+    feature_map = mapping(args.current_dataset_path,
+                          args.current_dataset_path + 'map.dict')
+    print(feature_map)
+
+    graphs = [i for i in range(count)]
+    return graphs
 
 # Routine to create datasets
 def create_graphs(args):
+    if args.create_random_graphs:
+        return create_random_graphs(args)
     # Different datasets
     if 'Breast' == args.graph_type:
         base_path = os.path.join(args.dataset_path, 'Breast/')

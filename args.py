@@ -9,6 +9,15 @@ class Args:
     """
 
     def __init__(self):
+        # Some extra parameters for Ramsey Numbers
+        self.num_nodes = 10
+        self.num_edge_labels = 2
+        self.num_node_labels = 1
+        #Should we generate a training set of random graphs or use real training data?
+            #The random data is only used for the initialization because the model has been built with training data given.
+        self.create_random_graphs = True
+        self.pre_train = True #Set this to False if working with random data
+
         # Can manually select the device too
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -26,18 +35,14 @@ class Args:
 
         # Check datasets/process_dataset for datasets
         # Select dataset to train the model
-        self.graph_type = 'Breast'
-        self.num_graphs = None  # Set it None to take complete dataset
+        self.graph_type = 'Ramsey'
+        self.num_graphs = 100  # Set it None to take complete dataset
 
         # Whether to produce networkx format graphs for real datasets
         self.produce_graphs = True
-        # Whether to produce min dfscode and write to files
-        self.produce_min_dfscodes = False
-        # Whether to map min dfscodes to tensors and save to files
-        self.produce_min_dfscode_tensors = False
 
         # if none, then auto calculate
-        self.max_prev_node = None  # max previous node that looks back for GraphRNN
+        self.max_prev_node = self.num_nodes  # max previous node that looks back for GraphRNN -> Can we set this to a smaller number for Ramsey Graphs?
 
         # Specific to GraphRNN
         # Model parameters
@@ -52,7 +57,7 @@ class Args:
         self.batch_size = 8  # normal: 32, and the rest should be changed accordingly
 
         # training config
-        self.num_workers = 8  # num workers to load data, default 4
+        self.num_workers = 1  # num workers to load data, default 4
         self.epochs = 10000
 
         self.lr = 0.003  # Learning rate
