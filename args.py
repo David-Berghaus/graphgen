@@ -13,6 +13,7 @@ class Args:
         self.num_nodes = 10
         self.num_edge_labels = 2
         self.num_node_labels = 1
+        self.clique_sizes = [3, 4]
         #Should we generate a training set of random graphs or use real training data?
             #The random data is only used for the initialization because the model has been built with training data given.
         self.create_random_graphs = True

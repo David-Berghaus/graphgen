@@ -13,11 +13,10 @@ def get_clique_count(G, k): #See: https://stackoverflow.com/a/58782120
             i += comb(len(clique), k, exact=True)
     return i
 
-def score_graph(G):
-    n = 3
-    m = 4
-    num_edge_labels = 2
-    num_nodes = G.number_of_nodes()
+def score_graph(args, G):
+    clique_sizes = args.clique_sizes
+    num_edge_labels = args.num_edge_labels
+    num_nodes = args.num_nodes
     simple_graphs = []
     for _ in range(num_edge_labels):
         tmp = nx.Graph()
@@ -30,9 +29,11 @@ def score_graph(G):
             else: #0 is the label for no edge
                 simple_graphs[0].add_edge(i, j)
 
-    a = get_clique_count(simple_graphs[0], n)
-    b = get_clique_count(simple_graphs[1], m)
-    return -(a + b)
+    assert len(clique_sizes) == len(simple_graphs)
+    score = 0
+    for i in range(len(clique_sizes)):
+        score += get_clique_count(simple_graphs[i], clique_sizes[i])
+    return -score #We want to maximize the score
 
 def get_random_adjacency_matrix(n): #Use this to benchmark the score function
     """
