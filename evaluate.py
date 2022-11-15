@@ -69,6 +69,21 @@ def generate_graphs(eval_args):
 
     save_graphs(eval_args.current_graphs_save_path, gen_graphs)
 
+def cross_entropy_iteration(model, elite_graphs, super_graphs):
+    """
+    Cross entropy method for graph generation
+    :param model: generative model
+    :param elite_graphs: elite graphs
+    :param super_graphs: super graphs
+    """
+    #Steps:
+    #1. generate new graphs using model
+    #2. calculate losses for each graph
+    #3. select elite graphs
+    #4. train model on elite graphs
+    #5. update super graphs
+
+
 if __name__ == "__main__":
     eval_args = ArgsEvaluate()
     train_args = eval_args.train_args
@@ -84,25 +99,19 @@ if __name__ == "__main__":
     # The original code loaded the graphs here and checked how similar the generated graphs are to the evaluation set.
 
     #Test to load graphs as nx
-    graphs = [i for i in range(10)]
-    # nx_graphs = []
-    # for i in graphs:
-    #     with open(train_args.current_processed_dataset_path + 'graph' + str(i) + '.dat', 'rb') as f:
-    #         G = pickle.load(f)
-    #     nx_graphs.append(G)
     from utils import load_graphs
-    nx_graphs = load_graphs(train_args.current_processed_dataset_path, graphs_indices=graphs)
+    nx_graphs = load_graphs(train_args.current_processed_dataset_path, graphs_indices=[i for i in range(10)])
     
 
 
     #Test training on the generated graphs
     from torch.utils.data import DataLoader
-    from graph_rnn.data import Graph_Adj_Matrix_from_file
+    from graph_rnn.data import Graph_Adj_Matrix
     from graph_rnn.model import create_model
     from utils import load_model
     from train import train
 
-    graphs_train = graphs
+    graphs_train = nx_graphs
     graphs_validate = [graphs_train[0]] #This is useless, but the code requires it
     # Loading the feature map
     with open(train_args.current_dataset_path + 'map.dict', 'rb') as f:
@@ -115,10 +124,12 @@ if __name__ == "__main__":
         net.eval()
 
     random_bfs = False
-    dataset_train = Graph_Adj_Matrix_from_file(
-        train_args, graphs_train, feature_map, random_bfs)
-    dataset_validate = Graph_Adj_Matrix_from_file(
-        train_args, graphs_validate, feature_map, random_bfs)
+    dataset_train = Graph_Adj_Matrix(
+        graphs_train, feature_map, max_prev_node=train_args.max_prev_node,
+        max_head_and_tail=train_args.max_head_and_tail, random_bfs=random_bfs)
+    dataset_validate = Graph_Adj_Matrix(
+        graphs_validate, feature_map, max_prev_node=train_args.max_prev_node,
+        max_head_and_tail=train_args.max_head_and_tail, random_bfs=random_bfs)
     
     dataloader_train = DataLoader(
         dataset_train, batch_size=train_args.batch_size, shuffle=True, drop_last=True,
