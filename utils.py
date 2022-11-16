@@ -2,19 +2,22 @@ import os
 import shutil
 import pickle
 import torch
-from networkx.utils.misc import graphs_equal
+from sage.graphs.graph import Graph
 
 class MyGraph():
-    #Dummy class to store nx graphs with equal function
     def __init__(self, G):
-        self.G = G
+        """
+        G: networkx graph
+        """
+        self.G_nx = G
+        self.G_sage = Graph(G).canonical_label() #Transform to Sage graph with canonical labeling to identify isomorphisms
         self.random_bfs_relabelings = None #We could add this later to add random bfs but with fixed relabelings
     
     def __eq__(self, other):
-        return graphs_equal(self.G, other.G) #Maybe use Sage's "canonical label" for it
+        return self.G_sage == other.G_sage
     
     def __hash__(self):
-        return hash(self.G)
+        return hash(self.G_nx)
 
 
 def mkdir(path):

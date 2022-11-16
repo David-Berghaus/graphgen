@@ -14,6 +14,7 @@ def get_clique_count(G, k): #See: https://stackoverflow.com/a/58782120
     return i
 
 def score_graph(args, G):
+    G = G.G_nx
     clique_sizes = args.clique_sizes
     num_edge_labels = args.num_edge_labels
     num_nodes = args.num_nodes

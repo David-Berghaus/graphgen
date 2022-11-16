@@ -7,6 +7,8 @@ from torch.utils.data import DataLoader
 import pickle
 import numpy as np
 
+import sage.all
+
 from args import Args
 from graph_rnn.train import predict_graphs as gen_graphs_graph_rnn
 from utils import get_model_attribute, load_graphs, save_graphs, MyGraph
@@ -22,7 +24,7 @@ class ArgsEvaluate():
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        model_name = "GraphRNN_Ramsey_2022-11-16 10:27:31/GraphRNN_Ramsey_1.dat"
+        model_name = "GraphRNN_Ramsey_2022-11-16 15:59:02/GraphRNN_Ramsey_1.dat"
 
         self.model_path = 'model_save/' + model_name 
 
@@ -92,7 +94,7 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
     generated_graphs = generate_graphs(eval_args, store_graphs=False, model=model)
     generated_graphs = {MyGraph(graph) for graph in generated_graphs} #Only compute score for unique graphs
     #2. calculate scores for each graph
-    generated_sessions = {graph:score_graph(args, graph.G) for graph in generated_graphs}
+    generated_sessions = {graph:score_graph(args, graph) for graph in generated_graphs}
     #3. select elite and super sessions
     states = super_sessions | generated_sessions #Merge dicts
     states = {k: v for k,v in sorted(states.items(), key=lambda x: x[1], reverse=True)}
@@ -111,7 +113,7 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
         else:
             break
     #4. train model on elite graphs
-    graphs_train = [graph.G for graph in elite_graphs]
+    graphs_train = [graph.G_nx for graph in elite_graphs]
     graphs_validate = [graphs_train[0]] #This is useless, but the code requires it
     random_bfs = False
     dataset_train = Graph_Adj_Matrix(
