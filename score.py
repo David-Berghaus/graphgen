@@ -1,34 +1,43 @@
 import numpy as np
 from scipy.special import comb
 
+from utils import MyGraph
+
 import networkx as nx
 from networkx.algorithms.operators.unary import complement
 
 def get_clique_count(G, k): #See: https://stackoverflow.com/a/58782120
     i = 0
-    for clique in nx.find_cliques(G):
+    for clique in nx.find_cliques(G.G_nx):
         if len(clique) == k:
             i += 1
         elif len(clique) > k:
             i += comb(len(clique), k, exact=True)
     return i
 
+# def get_clique_count(G, k):
+#     maximal_cliques = G.G_sage.cliques_maximum()
+#     n = len(maximal_cliques)
+#     m = len(maximal_cliques[0])
+#     return n*comb(m, k, exact=True)
+
 def score_graph(args, G):
-    G = G.G_nx
     clique_sizes = args.clique_sizes
     num_edge_labels = args.num_edge_labels
     num_nodes = args.num_nodes
-    simple_graphs = []
+    simple_graphs = [] #Simple graphs that have only binary edge labels
     for _ in range(num_edge_labels):
         tmp = nx.Graph()
         tmp.add_nodes_from(range(num_nodes))
         simple_graphs.append(tmp)
     for i in range(num_nodes):
         for j in range(i + 1, num_nodes):
-            if G.has_edge(i, j):
-                simple_graphs[G[i][j]['label']].add_edge(i, j)
+            if (G.G_nx).has_edge(i, j):
+                edge_label = (G.G_nx)[i][j]['label']
+                simple_graphs[edge_label].add_edge(i, j)
             else: #0 is the label for no edge
                 simple_graphs[0].add_edge(i, j)
+    simple_graphs = [MyGraph(simple_graph) for simple_graph in simple_graphs]
 
     assert len(clique_sizes) == len(simple_graphs)
     score = 0
