@@ -92,7 +92,7 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
     """
     #1. generate new graphs using model
     generated_graphs = generate_graphs(eval_args, store_graphs=False, model=model)
-    generated_graphs = {MyGraph(graph) for graph in generated_graphs} #Only compute score for unique graphs
+    generated_graphs = {MyGraph(graph,num_bfs_relabelings=args.num_bfs_labelings_cem) for graph in generated_graphs} #Only compute score for unique graphs
     #2. calculate scores for each graph
     generated_sessions = {graph:score_graph(args, graph) for graph in generated_graphs}
     #3. select elite and super sessions
@@ -113,7 +113,12 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
         else:
             break
     #4. train model on elite graphs
-    graphs_train = [graph.G_nx for graph in elite_graphs]
+    if args.num_bfs_labelings_cem is not None:
+        graphs_train = []
+        for graph in elite_graphs:
+            graphs_train += graph.G_nx_relabels
+    else:
+        graphs_train = [graph.G_nx for graph in elite_graphs]
     graphs_validate = [graphs_train[0]] #This is useless, but the code requires it
     random_bfs = False
     dataset_train = Graph_Adj_Matrix(
@@ -124,7 +129,7 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
         max_head_and_tail=train_args.max_head_and_tail, random_bfs=random_bfs)
     
     dataloader_train = DataLoader(
-        dataset_train, batch_size=train_args.batch_size, shuffle=True, drop_last=True,
+        dataset_train, batch_size=train_args.batch_size, shuffle=True,
         num_workers=train_args.num_workers)
     dataloader_validate = DataLoader(
         dataset_validate, batch_size=train_args.batch_size, shuffle=False,

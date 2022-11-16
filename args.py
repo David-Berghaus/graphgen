@@ -18,6 +18,7 @@ class Args:
             #The random data is only used for the initialization because the model has been built with training data given.
         self.create_random_graphs = True
         self.pre_train = True
+        self.num_bfs_labelings_cem = None #Amount of random bfs labelings to use for CEM, set to "None" if no relabeling should be done
 
         # Some extra parameters for the crossentropy method
         self.elite_percentile = 93 #top 100-X percentile we are learning from
