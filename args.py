@@ -10,14 +10,18 @@ class Args:
 
     def __init__(self):
         # Some extra parameters for Ramsey Numbers
-        self.num_nodes = 10
+        self.num_nodes = 13
         self.num_edge_labels = 2
         self.num_node_labels = 1
-        self.clique_sizes = [3, 4]
+        self.clique_sizes = [3, 5]
         #Should we generate a training set of random graphs or use real training data?
             #The random data is only used for the initialization because the model has been built with training data given.
         self.create_random_graphs = True
-        self.pre_train = True #Set this to False if working with random data
+        self.pre_train = True
+
+        # Some extra parameters for the crossentropy method
+        self.elite_percentile = 93 #top 100-X percentile we are learning from
+        self.super_percentile = 94 #top 100-X percentile that survives to next iteration
 
         # Can manually select the device too
         self.device = torch.device(
@@ -37,7 +41,7 @@ class Args:
         # Check datasets/process_dataset for datasets
         # Select dataset to train the model
         self.graph_type = 'Ramsey'
-        self.num_graphs = 100  # Set it None to take complete dataset
+        self.num_graphs = 200  # Set it None to take complete dataset
 
         # Whether to produce networkx format graphs for real datasets
         self.produce_graphs = True
@@ -58,8 +62,8 @@ class Args:
         self.batch_size = 8  # normal: 32, and the rest should be changed accordingly
 
         # training config
-        self.num_workers = 1  # num workers to load data, default 4
-        self.epochs = 10000
+        self.num_workers = 24  # num workers to load data, default 4
+        self.epochs = 1
 
         self.lr = 0.003  # Learning rate
         # Learning rate decay factor at each milestone (no. of epochs)

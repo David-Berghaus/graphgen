@@ -134,7 +134,7 @@ def evaluate_loss(args, model, data, feature_map):
     return loss
 
 
-def predict_graphs(eval_args):
+def predict_graphs(eval_args, model=None):
     """
     Generate graphs (networkx format) given a trained generative graphRNN model
     :param eval_args: ArgsEvaluate object
@@ -145,11 +145,12 @@ def predict_graphs(eval_args):
         'feature_map', eval_args.model_path, eval_args.device)
     train_args.device = eval_args.device
 
-    model = create_model(train_args, feature_map)
-    load_model(eval_args.model_path, eval_args.device, model)
+    if model is None:
+        model = create_model(train_args, feature_map)
+        load_model(eval_args.model_path, eval_args.device, model)
 
-    for _, net in model.items():
-        net.eval()
+        for _, net in model.items():
+            net.eval()
 
     max_num_node = eval_args.max_num_node
     len_node_vec, len_edge_vec, num_nodes_to_consider = get_attributes_len_for_graph_rnn(

@@ -3,18 +3,26 @@ import random
 import shutil
 from statistics import mean
 import torch
+from torch.utils.data import DataLoader
 import pickle
+import numpy as np
 
+from args import Args
 from graph_rnn.train import predict_graphs as gen_graphs_graph_rnn
-from utils import get_model_attribute, load_graphs, save_graphs
+from utils import get_model_attribute, load_graphs, save_graphs, MyGraph
+from score import score_graph
+from graph_rnn.data import Graph_Adj_Matrix
+from graph_rnn.model import create_model
+from utils import load_model
+from train import train
 
 class ArgsEvaluate():
-    def __init__(self):
+    def __init__(self, args=None):
         # Can manually select the device too
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        model_name = "GraphRNN_Ramsey_2022-11-15 14:51:03/GraphRNN_Ramsey_60.dat"
+        model_name = "GraphRNN_Ramsey_2022-11-16 10:27:31/GraphRNN_Ramsey_1.dat"
 
         self.model_path = 'model_save/' + model_name 
 
@@ -30,8 +38,12 @@ class ArgsEvaluate():
         self.metric_eval_batch_size = 256
 
         # Specific to GraphRNN
-        self.min_num_node = 0
-        self.max_num_node = 40
+        if args is not None:
+            self.min_num_node = args.num_nodes
+            self.max_num_node = args.num_nodes
+        else:
+            self.min_num_node = 0
+            self.max_num_node = 40
 
         self.train_args = get_model_attribute(
             'saved_args', self.model_path, self.device)
@@ -48,7 +60,7 @@ def patch_graph(graph):
     return graph
 
 
-def generate_graphs(eval_args):
+def generate_graphs(eval_args, store_graphs=True, model=None):
     """
     Generate graphs (networkx format) given a trained generative model
     and save them to a directory
@@ -58,71 +70,49 @@ def generate_graphs(eval_args):
     train_args = eval_args.train_args
 
     if train_args.note == 'GraphRNN':
-        gen_graphs = gen_graphs_graph_rnn(eval_args)
+        gen_graphs = gen_graphs_graph_rnn(eval_args, model=model)
     else:
         raise NotImplementedError('Only GraphRNN is supported')
 
-    if os.path.isdir(eval_args.current_graphs_save_path):
-        shutil.rmtree(eval_args.current_graphs_save_path)
+    if store_graphs:
+        if os.path.isdir(eval_args.current_graphs_save_path):
+            shutil.rmtree(eval_args.current_graphs_save_path)
 
-    os.makedirs(eval_args.current_graphs_save_path)
+        os.makedirs(eval_args.current_graphs_save_path)
 
-    save_graphs(eval_args.current_graphs_save_path, gen_graphs)
+        save_graphs(eval_args.current_graphs_save_path, gen_graphs)
+    else:
+        return gen_graphs
 
-def cross_entropy_iteration(model, elite_graphs, super_graphs):
+def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, feature_map):
     """
-    Cross entropy method for graph generation
-    :param model: generative model
-    :param elite_graphs: elite graphs
-    :param super_graphs: super graphs
+    Perform one iteration of the crossentropy.
     """
-    #Steps:
     #1. generate new graphs using model
-    #2. calculate losses for each graph
-    #3. select elite graphs
+    generated_graphs = generate_graphs(eval_args, store_graphs=False, model=model)
+    generated_graphs = {MyGraph(graph) for graph in generated_graphs} #Only compute score for unique graphs
+    #2. calculate scores for each graph
+    generated_sessions = {graph:score_graph(args, graph.G) for graph in generated_graphs}
+    #3. select elite and super sessions
+    states = super_sessions | generated_sessions #Merge dicts
+    states = {k: v for k,v in sorted(states.items(), key=lambda x: x[1], reverse=True)}
+    elite_reward_threshold = np.percentile(list(states.values()),args.elite_percentile)
+    elite_graphs = []
+    for graph, reward in states.items():
+        if reward >= elite_reward_threshold:
+            elite_graphs.append(graph)
+        else:
+            break
+    super_sessions_threshold = np.percentile(list(states.values()),args.super_percentile)
+    super_sessions = {}
+    for graph, reward in states.items():
+        if reward >= super_sessions_threshold:
+            super_sessions[graph] = reward
+        else:
+            break
     #4. train model on elite graphs
-    #5. update super graphs
-
-
-if __name__ == "__main__":
-    eval_args = ArgsEvaluate()
-    train_args = eval_args.train_args
-
-    print('Evaluating {}, run at {}, epoch {}'.format(
-        train_args.fname, train_args.time, eval_args.num_epochs))
-
-    if eval_args.generate_graphs:
-        generate_graphs(eval_args)
-
-    random.seed(123)
-
-    # The original code loaded the graphs here and checked how similar the generated graphs are to the evaluation set.
-
-    #Test to load graphs as nx
-    from utils import load_graphs
-    nx_graphs = load_graphs(train_args.current_processed_dataset_path, graphs_indices=[i for i in range(10)])
-    
-
-
-    #Test training on the generated graphs
-    from torch.utils.data import DataLoader
-    from graph_rnn.data import Graph_Adj_Matrix
-    from graph_rnn.model import create_model
-    from utils import load_model
-    from train import train
-
-    graphs_train = nx_graphs
+    graphs_train = [graph.G for graph in elite_graphs]
     graphs_validate = [graphs_train[0]] #This is useless, but the code requires it
-    # Loading the feature map
-    with open(train_args.current_dataset_path + 'map.dict', 'rb') as f:
-        feature_map = pickle.load(f)
-
-    model = create_model(train_args, feature_map)
-    load_model(eval_args.model_path, eval_args.device, model)
-
-    for _, net in model.items():
-        net.eval()
-
     random_bfs = False
     dataset_train = Graph_Adj_Matrix(
         graphs_train, feature_map, max_prev_node=train_args.max_prev_node,
@@ -137,6 +127,38 @@ if __name__ == "__main__":
     dataloader_validate = DataLoader(
         dataset_validate, batch_size=train_args.batch_size, shuffle=False,
         num_workers=train_args.num_workers)
-
+    
     train(train_args, dataloader_train, model, feature_map, dataloader_validate)
+
+    return model, super_sessions
+
+
+if __name__ == "__main__":
+    args = Args()
+    args = args.update_args()
+    eval_args = ArgsEvaluate(args=args)
+    train_args = eval_args.train_args
+
+    print('Evaluating {}, run at {}, epoch {}'.format(
+        train_args.fname, train_args.time, eval_args.num_epochs))
+
+    random.seed(123)
+
+    # Loading the feature map
+    with open(train_args.current_dataset_path + 'map.dict', 'rb') as f:
+        feature_map = pickle.load(f)
+
+    model = create_model(train_args, feature_map)
+    load_model(eval_args.model_path, eval_args.device, model)
+
+    for _, net in model.items():
+        net.eval()
+
+    super_sessions = {}
+    for i in range(100000000):
+        model, super_sessions = cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, feature_map)
+        print("best scores at iteration {}: {}".format(i, list(super_sessions.values())[:10]))
+        if list(super_sessions.values())[0] == 0:
+            print("Found a perfect graph!")
+            exit()
     

@@ -2,6 +2,19 @@ import os
 import shutil
 import pickle
 import torch
+from networkx.utils.misc import graphs_equal
+
+class MyGraph():
+    #Dummy class to store nx graphs with equal function
+    def __init__(self, G):
+        self.G = G
+        self.random_bfs_relabelings = None #We could add this later to add random bfs but with fixed relabelings
+    
+    def __eq__(self, other):
+        return graphs_equal(self.G, other.G) #Maybe use Sage's "canonical label" for it
+    
+    def __hash__(self):
+        return hash(self.G)
 
 
 def mkdir(path):
