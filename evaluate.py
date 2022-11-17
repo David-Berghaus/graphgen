@@ -6,6 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 import pickle
 import numpy as np
+from multiprocessing import Pool
 
 import sage.all
 
@@ -24,7 +25,7 @@ class ArgsEvaluate():
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        model_name = "GraphRNN_Ramsey_2022-11-16 17:58:00/GraphRNN_Ramsey_1.dat"
+        model_name = "GraphRNN_Ramsey_2022-11-17 16:10:01/GraphRNN_Ramsey_1.dat"
 
         self.model_path = 'model_save/' + model_name 
 
@@ -113,6 +114,14 @@ def get_super_sessions(args, states):
             break
     return super_sessions
 
+def get_mygraph_and_score(args, graph):
+    """
+    Compute MyGraph instance of graph (which involves computing the canonical labeling) as well as the score.
+    """
+    my_graph = MyGraph(graph)
+    score = score_graph(args, my_graph)
+    return my_graph, score
+
 def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, feature_map):
     """
     Perform one iteration of the crossentropy.
@@ -120,15 +129,11 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
     #1. generate new graphs using model
     generated_graphs = generate_graphs(eval_args, store_graphs=False, model=model)
     #print("len(super_sessions): ", len(super_sessions))
-    amount_of_newly_generated_graphs = 0
-    for graph in generated_graphs:
-        my_graph = MyGraph(graph)
-        if my_graph not in super_sessions:
-            #2. compute the score of the graph if it has not been computed before
-            score = score_graph(args, my_graph)
-            super_sessions[my_graph] = score
-            amount_of_newly_generated_graphs += 1
-    #print("Amount of newly generated unique graphs: ", amount_of_newly_generated_graphs)
+    #2. Run get_mygraph_and_score using multiprocessing
+    with Pool(args.num_workers) as pool:
+        my_graphs_and_scores = pool.starmap(get_mygraph_and_score, [(args, graph) for graph in generated_graphs])
+    for my_graph, score in my_graphs_and_scores:
+        super_sessions[my_graph] = score
     #3. select elite and super sessions
     states = {k: v for k,v in sorted(super_sessions.items(), key=lambda x: x[1], reverse=True)}
     elite_graphs = get_elite_graphs(args, states)
