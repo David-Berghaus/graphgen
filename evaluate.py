@@ -25,7 +25,7 @@ class ArgsEvaluate():
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        model_name = "GraphRNN_Ramsey_2022-11-17 16:10:01/GraphRNN_Ramsey_1.dat"
+        model_name = "GraphRNN_Ramsey_2022-11-17 17:05:11/GraphRNN_Ramsey_1.dat"
 
         self.model_path = 'model_save/' + model_name 
 
@@ -128,10 +128,10 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
     """
     #1. generate new graphs using model
     generated_graphs = generate_graphs(eval_args, store_graphs=False, model=model)
-    #print("len(super_sessions): ", len(super_sessions))
     #2. Run get_mygraph_and_score using multiprocessing
     with Pool(args.num_workers) as pool:
         my_graphs_and_scores = pool.starmap(get_mygraph_and_score, [(args, graph) for graph in generated_graphs])
+    print("Average Score: ", mean([score for _, score in my_graphs_and_scores]))
     for my_graph, score in my_graphs_and_scores:
         super_sessions[my_graph] = score
     #3. select elite and super sessions

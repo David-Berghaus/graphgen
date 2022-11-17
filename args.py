@@ -10,10 +10,10 @@ class Args:
 
     def __init__(self):
         # Some extra parameters for Ramsey Numbers
-        self.num_nodes = 13
+        self.num_nodes = 42
         self.num_edge_labels = 2
         self.num_node_labels = 1
-        self.clique_sizes = [3, 5]
+        self.clique_sizes = [5, 5]
         #Should we generate a training set of random graphs or use real training data?
             #The random data is only used for the initialization because the model has been built with training data given.
         self.create_random_graphs = True
@@ -42,7 +42,7 @@ class Args:
         # Check datasets/process_dataset for datasets
         # Select dataset to train the model
         self.graph_type = 'Ramsey'
-        self.num_graphs = 1024  # Set it None to take complete dataset
+        self.num_graphs = 256  # Set it None to take complete dataset
 
         # Whether to produce networkx format graphs for real datasets
         self.produce_graphs = True
@@ -60,7 +60,7 @@ class Args:
         self.embedding_size_edge_output = 8  # the size of edge output embedding
 
         self.num_layers = 4  # Layers of rnn
-        self.batch_size = 8  # normal: 32, and the rest should be changed accordingly
+        self.batch_size = 32  # normal: 32, and the rest should be changed accordingly
 
         # training config
         self.num_workers = 24  # num workers to load data, default 4
