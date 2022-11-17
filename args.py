@@ -42,7 +42,7 @@ class Args:
         # Check datasets/process_dataset for datasets
         # Select dataset to train the model
         self.graph_type = 'Ramsey'
-        self.num_graphs = 200  # Set it None to take complete dataset
+        self.num_graphs = 256  # Set it None to take complete dataset
 
         # Whether to produce networkx format graphs for real datasets
         self.produce_graphs = True

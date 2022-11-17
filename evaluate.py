@@ -24,7 +24,7 @@ class ArgsEvaluate():
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        model_name = "GraphRNN_Ramsey_2022-11-16 16:10:18/GraphRNN_Ramsey_1.dat"
+        model_name = "GraphRNN_Ramsey_2022-11-16 17:58:00/GraphRNN_Ramsey_1.dat"
 
         self.model_path = 'model_save/' + model_name 
 
@@ -34,7 +34,10 @@ class ArgsEvaluate():
         # Whether to generate networkx format graphs for real datasets
         self.generate_graphs = True
 
-        self.count = 2560
+        if args is not None:
+            self.count = args.num_graphs
+        else:
+            self.count = 2560
         self.batch_size = 32  # Must be a factor of count
 
         self.metric_eval_batch_size = 256
@@ -86,32 +89,50 @@ def generate_graphs(eval_args, store_graphs=True, model=None):
     else:
         return gen_graphs
 
+def get_elite_graphs(args, states):
+    elite_reward_threshold = np.percentile(list(states.values()),args.elite_percentile)
+    elite_graphs = []
+    counter = args.num_graphs * (100.0 - args.elite_percentile) / 100.0
+    for graph, reward in states.items():
+        if (counter > 0) or (reward >= elite_reward_threshold):
+            elite_graphs.append(graph)
+            counter -= 1
+        else:
+            break
+    return elite_graphs
+
+def get_super_sessions(args, states):
+    super_reward_threshold = np.percentile(list(states.values()),args.super_percentile)
+    super_sessions = {}
+    counter = args.num_graphs * (100.0 - args.super_percentile) / 100.0
+    for graph, reward in states.items():
+        if (counter > 0) or (reward >= super_reward_threshold):
+            super_sessions[graph] = reward
+            counter -= 1
+        else:
+            break
+    return super_sessions
+
 def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, feature_map):
     """
     Perform one iteration of the crossentropy.
     """
     #1. generate new graphs using model
     generated_graphs = generate_graphs(eval_args, store_graphs=False, model=model)
-    generated_graphs = {MyGraph(graph,num_bfs_relabelings=args.num_bfs_labelings_cem) for graph in generated_graphs} #Only compute score for unique graphs
-    #2. calculate scores for each graph
-    generated_sessions = {graph:score_graph(args, graph) for graph in generated_graphs}
+    #print("len(super_sessions): ", len(super_sessions))
+    amount_of_newly_generated_graphs = 0
+    for graph in generated_graphs:
+        my_graph = MyGraph(graph)
+        if my_graph not in super_sessions:
+            #2. compute the score of the graph if it has not been computed before
+            score = score_graph(args, my_graph)
+            super_sessions[my_graph] = score
+            amount_of_newly_generated_graphs += 1
+    #print("Amount of newly generated unique graphs: ", amount_of_newly_generated_graphs)
     #3. select elite and super sessions
-    states = super_sessions | generated_sessions #Merge dicts
-    states = {k: v for k,v in sorted(states.items(), key=lambda x: x[1], reverse=True)}
-    elite_reward_threshold = np.percentile(list(states.values()),args.elite_percentile)
-    elite_graphs = []
-    for graph, reward in states.items():
-        if reward >= elite_reward_threshold:
-            elite_graphs.append(graph)
-        else:
-            break
-    super_sessions_threshold = np.percentile(list(states.values()),args.super_percentile)
-    super_sessions = {}
-    for graph, reward in states.items():
-        if reward >= super_sessions_threshold:
-            super_sessions[graph] = reward
-        else:
-            break
+    states = {k: v for k,v in sorted(super_sessions.items(), key=lambda x: x[1], reverse=True)}
+    elite_graphs = get_elite_graphs(args, states)
+    super_sessions = get_super_sessions(args, states)
     #4. train model on elite graphs
     if args.num_bfs_labelings_cem is not None:
         graphs_train = []
