@@ -24,7 +24,7 @@ class ArgsEvaluate():
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        model_name = "GraphRNN_Ramsey_2022-11-18 15:43:08/GraphRNN_Ramsey_0.dat"
+        model_name = "GraphRNN_Ramsey_2022-11-18 16:47:58/GraphRNN_Ramsey_0.dat"
 
         self.model_path = 'model_save/' + model_name 
 
@@ -169,6 +169,9 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
     
     train(train_args, dataloader_train, model, feature_map, dataloader_validate, cem_iteration_count=cem_iteration_count)
 
+    with open(train_args.current_model_save_path+f'super_sessions_{cem_iteration_count}.dat', 'wb') as f:
+        pickle.dump(super_sessions, f)
+
     return model, super_sessions
 
 
@@ -194,8 +197,14 @@ if __name__ == "__main__":
         net.eval()
 
     start_epoch = get_trailing_number(eval_args.model_path.strip('.dat'))
-
-    super_sessions = {}
+    #Load pickeled super sessions
+    sessions_path = train_args.current_model_save_path + f'super_sessions_{start_epoch}.dat'
+    if os.path.isfile(sessions_path):
+        with open(sessions_path, 'rb') as f:
+            super_sessions = pickle.load(f)
+            print("Loaded super sessions from ", sessions_path)
+    else:
+        super_sessions = {}
     for i in range(start_epoch,100000000):
         model, super_sessions = cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, feature_map, i)
         if list(super_sessions.values())[0] == 0:

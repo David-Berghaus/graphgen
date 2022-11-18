@@ -104,13 +104,6 @@ def train(args, dataloader_train, model, feature_map, dataloader_validate=None, 
         else:
             print('Epoch: {}/{}, train loss: {:.6f}'.format(epoch, args.epochs, loss))
 
-        # save model checkpoint
-        if args.save_model and epoch != 0 and epoch % args.epochs_save == 0:
-            save_model(
-                epoch, args, model, optimizer, scheduler, feature_map=feature_map)
-            print(
-                'Model Saved - Epoch: {}/{}, train loss: {:.6f}'.format(epoch, args.epochs, loss))
-
         if dataloader_validate is not None and epoch % args.epochs_validate == 0:
             loss_validate = test_data(
                 args, model, dataloader_validate, feature_map)
