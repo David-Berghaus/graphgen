@@ -25,7 +25,7 @@ class ArgsEvaluate():
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        model_name = "GraphRNN_Ramsey_2022-11-17 17:05:11/GraphRNN_Ramsey_1.dat"
+        model_name = "GraphRNN_Ramsey_2022-11-18 10:18:55/GraphRNN_Ramsey_5.dat"
 
         self.model_path = 'model_save/' + model_name 
 
@@ -132,11 +132,17 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
     with Pool(args.num_workers) as pool:
         my_graphs_and_scores = pool.starmap(get_mygraph_and_score, [(args, graph) for graph in generated_graphs])
     print("Average Score: ", mean([score for _, score in my_graphs_and_scores]))
+    states = {k: v for (k, v) in super_sessions.items()}
     for my_graph, score in my_graphs_and_scores:
-        super_sessions[my_graph] = score
+        states[my_graph] = score
     #3. select elite and super sessions
-    states = {k: v for k,v in sorted(super_sessions.items(), key=lambda x: x[1], reverse=True)}
+    states = {k: v for k,v in sorted(states.items(), key=lambda x: x[1], reverse=True)}
     elite_graphs = get_elite_graphs(args, states)
+    num_new_elite_graphs = 0
+    for (new_graph,_) in my_graphs_and_scores:
+        if new_graph in elite_graphs and new_graph not in super_sessions:
+            num_new_elite_graphs += 1
+    print("Percentage of new elite graphs: ", 100.0*num_new_elite_graphs / len(elite_graphs))
     super_sessions = get_super_sessions(args, states)
     #4. train model on elite graphs
     if args.num_bfs_labelings_cem is not None:

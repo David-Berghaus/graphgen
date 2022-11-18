@@ -60,11 +60,11 @@ class Args:
         self.embedding_size_edge_output = 8  # the size of edge output embedding
 
         self.num_layers = 4  # Layers of rnn
-        self.batch_size = 32  # normal: 32, and the rest should be changed accordingly
+        self.batch_size = 1  # normal: 32, and the rest should be changed accordingly
 
         # training config
         self.num_workers = 24  # num workers to load data, default 4
-        self.epochs = 1
+        self.epochs = 5
 
         self.lr = 0.003  # Learning rate
         # Learning rate decay factor at each milestone (no. of epochs)
