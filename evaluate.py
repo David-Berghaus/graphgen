@@ -12,11 +12,10 @@ import sage.all
 
 from args import Args
 from graph_rnn.train import predict_graphs as gen_graphs_graph_rnn
-from utils import get_model_attribute, load_graphs, save_graphs, MyGraph
+from utils import get_model_attribute, load_graphs, save_graphs, MyGraph, get_trailing_number, load_model
 from score import score_graph
 from graph_rnn.data import Graph_Adj_Matrix
 from graph_rnn.model import create_model
-from utils import load_model
 from train import train
 
 class ArgsEvaluate():
@@ -25,7 +24,7 @@ class ArgsEvaluate():
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        model_name = "GraphRNN_Ramsey_2022-11-18 10:18:55/GraphRNN_Ramsey_5.dat"
+        model_name = "GraphRNN_Ramsey_2022-11-18 15:43:08/GraphRNN_Ramsey_0.dat"
 
         self.model_path = 'model_save/' + model_name 
 
@@ -122,7 +121,7 @@ def get_mygraph_and_score(args, graph):
     score = score_graph(args, my_graph)
     return my_graph, score
 
-def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, feature_map):
+def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, feature_map, cem_iteration_count):
     """
     Perform one iteration of the crossentropy.
     """
@@ -138,12 +137,13 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
     #3. select elite and super sessions
     states = {k: v for k,v in sorted(states.items(), key=lambda x: x[1], reverse=True)}
     elite_graphs = get_elite_graphs(args, states)
-    num_new_elite_graphs = 0
-    for (new_graph,_) in my_graphs_and_scores:
-        if new_graph in elite_graphs and new_graph not in super_sessions:
-            num_new_elite_graphs += 1
-    print("Percentage of new elite graphs: ", 100.0*num_new_elite_graphs / len(elite_graphs))
     super_sessions = get_super_sessions(args, states)
+    print("super scores at iteration {}: {}".format(cem_iteration_count, list(super_sessions.values())))
+    num_new_super_graphs = 0
+    for (new_graph,_) in my_graphs_and_scores:
+        if new_graph in super_sessions:
+            num_new_super_graphs += 1
+    print("Percentage of new super graphs: ", 100.0*num_new_super_graphs / len(super_sessions))
     #4. train model on elite graphs
     if args.num_bfs_labelings_cem is not None:
         graphs_train = []
@@ -167,7 +167,7 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
         dataset_validate, batch_size=train_args.batch_size, shuffle=False,
         num_workers=train_args.num_workers)
     
-    train(train_args, dataloader_train, model, feature_map, dataloader_validate)
+    train(train_args, dataloader_train, model, feature_map, dataloader_validate, cem_iteration_count=cem_iteration_count)
 
     return model, super_sessions
 
@@ -193,10 +193,11 @@ if __name__ == "__main__":
     for _, net in model.items():
         net.eval()
 
+    start_epoch = get_trailing_number(eval_args.model_path.strip('.dat'))
+
     super_sessions = {}
-    for i in range(100000000):
-        model, super_sessions = cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, feature_map)
-        print("best scores at iteration {}: {}".format(i, list(super_sessions.values())[:10]))
+    for i in range(start_epoch,100000000):
+        model, super_sessions = cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, feature_map, i)
         if list(super_sessions.values())[0] == 0:
             print("Found a perfect graph!")
             exit()

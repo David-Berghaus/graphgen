@@ -63,7 +63,7 @@ def test_data(args, model, dataloader, feature_map):
 
 
 # Main training function
-def train(args, dataloader_train, model, feature_map, dataloader_validate=None):
+def train(args, dataloader_train, model, feature_map, dataloader_validate=None, cem_iteration_count=0):
     # initialize optimizer
     optimizer = {}
     for name, net in model.items():
@@ -121,6 +121,8 @@ def train(args, dataloader_train, model, feature_map, dataloader_validate=None):
                 print('Epoch: {}/{}, validation loss: {:.6f}'.format(
                     epoch, args.epochs, loss_validate))
 
-    save_model(epoch, args, model, optimizer,
-               scheduler, feature_map=feature_map)
-    print('Model Saved - Epoch: {}/{}, train loss: {:.6f}'.format(epoch, args.epochs, loss))
+    if args.save_model and cem_iteration_count % args.epochs_save == 0:
+        save_model(cem_iteration_count, args, model, optimizer,
+                scheduler, feature_map=feature_map)
+        print('Model Saved')
+    print('train loss: {:.6f}'.format(loss))

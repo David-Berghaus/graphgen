@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 import pickle
 import torch
@@ -47,6 +48,9 @@ def mkdir(path):
 
     os.makedirs(path)
 
+def get_trailing_number(s):
+    m = re.search(r'\d+$', s)
+    return int(m.group()) if m else None
 
 def load_graphs(graphs_path, graphs_indices=None):
     """
