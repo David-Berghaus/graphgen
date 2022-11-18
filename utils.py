@@ -16,7 +16,7 @@ class MyGraph():
         G: networkx graph
         """   
         self.G_sage, certificate = Graph(G).canonical_label(edge_labels=True,certificate=True) #Transform to Sage graph with canonical labeling to identify isomorphisms
-        G = nx.relabel_nodes(G, certificate) #Relabel nodes to match canonical labeling
+        #G = nx.relabel_nodes(G, certificate) #Relabel nodes to match canonical labeling
         self.G_nx = G
 
         if num_bfs_relabelings is not None:

@@ -66,7 +66,7 @@ class Args:
         self.num_workers = 24  # num workers to load data, default 4
         self.epochs = 5
 
-        self.lr = 0.003  # Learning rate
+        self.lr = 0.0001  # Learning rate
         # Learning rate decay factor at each milestone (no. of epochs)
         self.gamma = 0.3
         self.milestones = [100, 200, 400, 800]  # List of milestones
