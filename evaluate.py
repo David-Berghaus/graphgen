@@ -24,7 +24,7 @@ class ArgsEvaluate():
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        model_name = "GraphRNN_Ramsey_2022-11-18 17:13:28/GraphRNN_Ramsey_0.dat"
+        model_name = "GraphRNN_Ramsey_2022-11-19 12:27:44/GraphRNN_Ramsey_0.dat"
 
         self.model_path = 'model_save/' + model_name 
 
@@ -129,7 +129,7 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
     generated_graphs = generate_graphs(eval_args, store_graphs=False, model=model)
     #2. Run get_mygraph_and_score using multiprocessing
     with Pool(args.num_workers) as pool:
-        my_graphs_and_scores = pool.starmap(get_mygraph_and_score, [(args, graph) for graph in generated_graphs])
+        my_graphs_and_scores = list(pool.starmap(get_mygraph_and_score, [(args, graph) for graph in generated_graphs]))
     print("Average Score: ", mean([score for _, score in my_graphs_and_scores]))
     states = {k: v for (k, v) in super_sessions.items()}
     for my_graph, score in my_graphs_and_scores:
@@ -145,10 +145,9 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
             num_new_super_graphs += 1
     print("Percentage of new super graphs: ", 100.0*num_new_super_graphs / len(super_sessions))
     #4. train model on elite graphs
-    if args.num_bfs_labelings_cem is not None:
-        graphs_train = []
-        for graph in elite_graphs:
-            graphs_train += graph.G_nx_relabels
+    if args.num_bfs_relabelings_cem is not None:
+        relabeled_graphs = [graph.get_relabels(args) for graph in elite_graphs]
+        graphs_train = [graph for relabeled_graph in relabeled_graphs for graph in relabeled_graph]
     else:
         graphs_train = [graph.G_nx for graph in elite_graphs]
     graphs_validate = [graphs_train[0]] #This is useless, but the code requires it

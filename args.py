@@ -18,7 +18,7 @@ class Args:
             #The random data is only used for the initialization because the model has been built with training data given.
         self.create_random_graphs = True
         self.pre_train = True
-        self.num_bfs_labelings_cem = None #Amount of random bfs labelings to use for CEM, set to "None" if no relabeling should be done
+        self.num_bfs_relabelings_cem = 100 #Amount of random bfs labelings to use for CEM, set to "None" if no relabeling should be done
 
         # Some extra parameters for the crossentropy method
         self.elite_percentile = 93 #top 100-X percentile we are learning from
@@ -60,13 +60,13 @@ class Args:
         self.embedding_size_edge_output = 8  # the size of edge output embedding
 
         self.num_layers = 4  # Layers of rnn
-        self.batch_size = 1  # normal: 32, and the rest should be changed accordingly
+        self.batch_size = 32  # normal: 32, and the rest should be changed accordingly
 
         # training config
         self.num_workers = 24  # num workers to load data, default 4
-        self.epochs = 5
+        self.epochs = 1
 
-        self.lr = 0.0001  # Learning rate
+        self.lr = 0.003  # Learning rate
         # Learning rate decay factor at each milestone (no. of epochs)
         self.gamma = 0.3
         self.milestones = [100, 200, 400, 800]  # List of milestones

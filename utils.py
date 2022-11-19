@@ -11,32 +11,33 @@ from sage.graphs.graph import Graph
 from datasets.preprocess import get_random_bfs_seq
 
 class MyGraph():
-    def __init__(self, G, num_bfs_relabelings=None):
+    def __init__(self, G):
         """
         G: networkx graph
         """   
-        self.G_sage, certificate = Graph(G).canonical_label(edge_labels=True,certificate=True) #Transform to Sage graph with canonical labeling to identify isomorphisms
-        #G = nx.relabel_nodes(G, certificate) #Relabel nodes to match canonical labeling
+        self.G_sage = Graph(G).canonical_label(edge_labels=True) #Transform to Sage graph with canonical labeling to identify isomorphisms
         self.G_nx = G
-
-        if num_bfs_relabelings is not None:
-            self.G_nx_relabels = []
-            bfs_seqs = set()
-            for _ in range(10*num_bfs_relabelings): #Don't want to get stuck in an infinite loop
-                random_bfs_seq = tuple(get_random_bfs_seq(G))
-                if random_bfs_seq not in bfs_seqs:
-                    bfs_order_map = {random_bfs_seq[i]: i for i in range(len(G.nodes()))}
-                    self.G_nx_relabels.append(nx.relabel_nodes(G, bfs_order_map))
-                    bfs_seqs.add(random_bfs_seq)
-                    if len(self.G_nx_relabels) == num_bfs_relabelings:
-                        break
+        self.G_nx_relabels = None
     
     def __eq__(self, other):
         return self.G_sage == other.G_sage
     
     def __hash__(self):
         return hash(self.G_nx)
-
+    
+    def get_relabels(self, args):
+        if self.G_nx_relabels is None:
+            self.G_nx_relabels = [self.G_nx]
+            bfs_seqs = set()
+            for _ in range(10*args.num_bfs_relabelings_cem): #Don't want to get stuck in an infinite loop
+                random_bfs_seq = tuple(get_random_bfs_seq(self.G_nx))
+                if random_bfs_seq not in bfs_seqs:
+                    bfs_order_map = {random_bfs_seq[i]: i for i in range(len(self.G_nx.nodes()))}
+                    self.G_nx_relabels.append(nx.relabel_nodes(self.G_nx, bfs_order_map))
+                    bfs_seqs.add(random_bfs_seq)
+                    if len(self.G_nx_relabels) == args.num_bfs_relabelings_cem:
+                        break
+        return self.G_nx_relabels
 
 def mkdir(path):
     if os.path.isdir(path):
