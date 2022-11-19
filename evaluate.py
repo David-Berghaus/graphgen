@@ -26,7 +26,7 @@ class ArgsEvaluate():
 
         model_name = "GraphRNN_Ramsey_2022-11-19 12:39:18/GraphRNN_Ramsey_0.dat"
 
-        self.model_path = 'model_save/' + model_name 
+        self.model_path = args.model_save_path + model_name 
 
         self.num_epochs = get_model_attribute(
             'epoch', self.model_path, self.device)
