@@ -24,7 +24,7 @@ class ArgsEvaluate():
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        model_name = "GraphRNN_Ramsey_2022-11-19 12:27:44/GraphRNN_Ramsey_0.dat"
+        model_name = "GraphRNN_Ramsey_2022-11-19 12:39:18/GraphRNN_Ramsey_0.dat"
 
         self.model_path = 'model_save/' + model_name 
 
@@ -130,7 +130,10 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
     #2. Run get_mygraph_and_score using multiprocessing
     with Pool(args.num_workers) as pool:
         my_graphs_and_scores = list(pool.starmap(get_mygraph_and_score, [(args, graph) for graph in generated_graphs]))
-    print("Average Score: ", mean([score for _, score in my_graphs_and_scores]))
+    avg_score = mean([score for _, score in my_graphs_and_scores])
+    print("Average Score: ", avg_score)
+    with open(train_args.current_model_save_path + "average_scores.txt", "a") as myfile:
+        myfile.write("{}, {}\n".format(cem_iteration_count, avg_score))
     states = {k: v for (k, v) in super_sessions.items()}
     for my_graph, score in my_graphs_and_scores:
         states[my_graph] = score
@@ -139,6 +142,8 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
     elite_graphs = get_elite_graphs(args, states)
     super_sessions = get_super_sessions(args, states)
     print("super scores at iteration {}: {}".format(cem_iteration_count, list(super_sessions.values())))
+    with open(train_args.current_model_save_path + "super_scores.txt", "a") as myfile:
+        myfile.write("{}, {}\n".format(cem_iteration_count, list(super_sessions.values())))
     num_new_super_graphs = 0
     for (new_graph,_) in my_graphs_and_scores:
         if new_graph in super_sessions:
