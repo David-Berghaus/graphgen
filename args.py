@@ -75,7 +75,8 @@ class Args:
         self.gradient_clipping = True
 
         # Output config
-        self.dir_input = ''
+        # self.dir_input = ''
+        self.dir_input = '/cephfs/user/s6ddberg/Ramsey/'
         self.model_save_path = self.dir_input + 'model_save/'
         self.tensorboard_path = self.dir_input + 'tensorboard/'
         self.dataset_path = self.dir_input + 'datasets/'
