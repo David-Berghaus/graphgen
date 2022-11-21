@@ -18,7 +18,7 @@ class Args:
             #The random data is only used for the initialization because the model has been built with training data given.
         self.create_random_graphs = True
         self.pre_train = True
-        self.num_bfs_relabelings_cem = 100 #Amount of random bfs labelings to use for CEM, set to "None" if no relabeling should be done
+        self.num_bfs_relabelings_cem = None #Amount of random bfs labelings to use for CEM, set to "None" if no relabeling should be done
 
         # Some extra parameters for the crossentropy method
         self.elite_percentile = 93 #top 100-X percentile we are learning from
@@ -64,7 +64,7 @@ class Args:
 
         # training config
         self.num_workers = 24  # num workers to load data, default 4
-        self.epochs = 1
+        self.epochs = 50
 
         self.lr = 0.003  # Learning rate
         # Learning rate decay factor at each milestone (no. of epochs)
@@ -75,8 +75,8 @@ class Args:
         self.gradient_clipping = True
 
         # Output config
-        # self.dir_input = ''
-        self.dir_input = '/cephfs/user/s6ddberg/Ramsey/'
+        self.dir_input = ''
+        # self.dir_input = '/cephfs/user/s6ddberg/Ramsey/'
         self.model_save_path = self.dir_input + 'model_save/'
         self.tensorboard_path = self.dir_input + 'tensorboard/'
         self.dataset_path = self.dir_input + 'datasets/'

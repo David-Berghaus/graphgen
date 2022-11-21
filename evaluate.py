@@ -24,7 +24,7 @@ class ArgsEvaluate():
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        model_name = "GraphRNN_Ramsey_2022-11-19 12:39:18/GraphRNN_Ramsey_0.dat"
+        model_name = "GraphRNN_Ramsey_2022-11-21 12:04:53/GraphRNN_Ramsey_0.dat"
 
         self.model_path = args.model_save_path + model_name 
 
@@ -155,23 +155,16 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
         graphs_train = [graph for relabeled_graph in relabeled_graphs for graph in relabeled_graph]
     else:
         graphs_train = [graph.G_nx for graph in elite_graphs]
-    graphs_validate = [graphs_train[0]] #This is useless, but the code requires it
-    random_bfs = False
+    random_bfs = True
     dataset_train = Graph_Adj_Matrix(
         graphs_train, feature_map, max_prev_node=train_args.max_prev_node,
-        max_head_and_tail=train_args.max_head_and_tail, random_bfs=random_bfs)
-    dataset_validate = Graph_Adj_Matrix(
-        graphs_validate, feature_map, max_prev_node=train_args.max_prev_node,
         max_head_and_tail=train_args.max_head_and_tail, random_bfs=random_bfs)
     
     dataloader_train = DataLoader(
         dataset_train, batch_size=train_args.batch_size, shuffle=True,
         num_workers=train_args.num_workers)
-    dataloader_validate = DataLoader(
-        dataset_validate, batch_size=train_args.batch_size, shuffle=False,
-        num_workers=train_args.num_workers)
     
-    train(train_args, dataloader_train, model, feature_map, dataloader_validate, cem_iteration_count=cem_iteration_count)
+    train(train_args, dataloader_train, model, feature_map, cem_iteration_count=cem_iteration_count)
 
     with open(train_args.current_model_save_path+f'super_sessions_{cem_iteration_count}.dat', 'wb') as f:
         pickle.dump(super_sessions, f)
