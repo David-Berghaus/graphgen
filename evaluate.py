@@ -24,7 +24,7 @@ class ArgsEvaluate():
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        model_name = "GraphRNN_Ramsey_2022-11-21 12:04:53/GraphRNN_Ramsey_0.dat"
+        model_name = "GraphRNN_Ramsey_2022-11-21 18:59:35/GraphRNN_Ramsey_0.dat"
 
         self.model_path = args.model_save_path + model_name 
 
@@ -130,8 +130,11 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
     #2. Run get_mygraph_and_score using multiprocessing
     with Pool(args.num_workers) as pool:
         my_graphs_and_scores = list(pool.starmap(get_mygraph_and_score, [(args, graph) for graph in generated_graphs]))
-    avg_score = mean([score for _, score in my_graphs_and_scores])
-    print("Average Score: ", avg_score)
+    #Compute the average score of the top 10% of the generated graphs
+    scores = [score for _, score in my_graphs_and_scores]
+    top_ten_percentile = np.percentile(scores,10)
+    avg_score = np.mean([score for score in scores if score >= top_ten_percentile])
+    print("Average Score of top 10%: ", avg_score)
     with open(train_args.current_model_save_path + "average_scores.txt", "a") as myfile:
         myfile.write("{}, {}\n".format(cem_iteration_count, avg_score))
     states = {k: v for (k, v) in super_sessions.items()}
