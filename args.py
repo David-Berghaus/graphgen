@@ -64,7 +64,7 @@ class Args:
 
         # training config
         self.num_workers = 24  # num workers to load data, default 4
-        self.epochs = 50
+        self.epochs = 10
 
         self.lr = 0.003  # Learning rate
         # Learning rate decay factor at each milestone (no. of epochs)

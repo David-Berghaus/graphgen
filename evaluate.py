@@ -154,7 +154,7 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
         relabeled_graphs = [graph.get_relabels(args) for graph in elite_graphs]
         graphs_train = [graph for relabeled_graph in relabeled_graphs for graph in relabeled_graph]
     else:
-        graphs_train = [graph.G_nx for graph in elite_graphs]
+        graphs_train = [graph.G_nx for graph in elite_graphs]*int(512/len(elite_graphs)) #Inflate training set to be able to train on larger batches
     random_bfs = True
     dataset_train = Graph_Adj_Matrix(
         graphs_train, feature_map, max_prev_node=train_args.max_prev_node,
