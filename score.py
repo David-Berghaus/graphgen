@@ -6,9 +6,9 @@ from utils import MyGraph
 import networkx as nx
 from networkx.algorithms.operators.unary import complement
 
-def get_clique_count(G, k): #See: https://stackoverflow.com/a/58782120
+def get_clique_count(G_nx, k): #See: https://stackoverflow.com/a/58782120
     i = 0
-    for clique in nx.find_cliques(G.G_nx):
+    for clique in nx.find_cliques(G_nx):
         if len(clique) == k:
             i += 1
         elif len(clique) > k:
@@ -37,7 +37,7 @@ def score_graph(args, G):
                 simple_graphs[edge_label].add_edge(i, j)
             else: #0 is the label for no edge
                 simple_graphs[0].add_edge(i, j)
-    simple_graphs = [MyGraph(simple_graph) for simple_graph in simple_graphs]
+    simple_graphs = [simple_graph for simple_graph in simple_graphs]
 
     assert len(clique_sizes) == len(simple_graphs)
     score = 0
