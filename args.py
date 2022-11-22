@@ -21,8 +21,8 @@ class Args:
         self.num_bfs_relabelings_cem = None #Amount of random bfs labelings to use for CEM, set to "None" if no relabeling should be done
 
         # Some extra parameters for the crossentropy method
-        self.elite_percentile = 93 #top 100-X percentile we are learning from
-        self.super_percentile = 94 #top 100-X percentile that survives to next iteration
+        self.elite_percentile = 90 #top 100-X percentile we are learning from
+        self.super_percentile = 91 #top 100-X percentile that survives to next iteration
 
         # Can manually select the device too
         self.device = torch.device(
