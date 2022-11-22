@@ -119,3 +119,4 @@ def train(args, dataloader_train, model, feature_map, dataloader_validate=None, 
                 scheduler, feature_map=feature_map)
         print('Model Saved')
     print('train loss: {:.6f}'.format(loss))
+    return loss

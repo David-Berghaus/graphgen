@@ -167,10 +167,13 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
         dataset_train, batch_size=train_args.batch_size, shuffle=True,
         num_workers=train_args.num_workers)
     
-    train(train_args, dataloader_train, model, feature_map, cem_iteration_count=cem_iteration_count)
+    loss = train(train_args, dataloader_train, model, feature_map, cem_iteration_count=cem_iteration_count)
 
     with open(train_args.current_model_save_path+f'super_sessions_{cem_iteration_count}.dat', 'wb') as f:
         pickle.dump(super_sessions, f)
+    
+    with open(train_args.current_model_save_path + "train_losses.txt", "a") as myfile:
+        myfile.write("{}, {:.6f}\n".format(cem_iteration_count, loss))
 
     return model, super_sessions
 
