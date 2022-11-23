@@ -4,7 +4,7 @@ import shutil
 import pickle
 import torch
 import networkx as nx
-from networkx.utils.misc import graphs_equal
+# from networkx.utils.misc import graphs_equal
 
 from datasets.preprocess import get_random_bfs_seq
 
