@@ -123,6 +123,7 @@ def cross_entropy_iteration(model, args, train_args, eval_args, super_sessions, 
     """
     Perform one iteration of the crossentropy.
     """
+    torch.set_num_threads(train_args.num_workers)
     #1. generate new graphs using model
     generated_graphs = generate_graphs(eval_args, store_graphs=False, model=model)
     #2. Run get_mygraph_and_score using multiprocessing
