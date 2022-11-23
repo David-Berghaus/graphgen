@@ -6,8 +6,6 @@ import torch
 import networkx as nx
 from networkx.utils.misc import graphs_equal
 
-from sage.graphs.graph import Graph
-
 from datasets.preprocess import get_random_bfs_seq
 
 class MyGraph():
@@ -15,12 +13,11 @@ class MyGraph():
         """
         G: networkx graph
         """   
-        self.G_sage = Graph(G).canonical_label(edge_labels=True) #Transform to Sage graph with canonical labeling to identify isomorphisms
         self.G_nx = G
         self.G_nx_relabels = None
     
     def __eq__(self, other):
-        return self.G_sage == other.G_sage
+        return False #To Do: Use a proper isomorphism check
     
     def __hash__(self):
         return hash(self.G_nx)

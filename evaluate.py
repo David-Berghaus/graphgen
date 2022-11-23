@@ -8,8 +8,6 @@ import pickle
 import numpy as np
 from multiprocessing import Pool
 
-import sage.all
-
 from args import Args
 from graph_rnn.train import predict_graphs as gen_graphs_graph_rnn
 from utils import get_model_attribute, load_graphs, save_graphs, MyGraph, get_trailing_number, load_model

@@ -3,8 +3,6 @@ import time
 import pickle
 from torch.utils.data import DataLoader
 
-import sage.all
-
 from args import Args
 from utils import create_dirs
 from datasets.process_dataset import create_graphs
