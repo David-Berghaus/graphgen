@@ -55,9 +55,9 @@ class Args:
         self.hidden_size_node_level_rnn = 256  # hidden size for node level RNN
         self.embedding_size_node_level_rnn = 128  # the size for node level RNN input
         self.embedding_size_node_output = 128  # the size of node output embedding
-        self.hidden_size_edge_level_rnn = 32  # hidden size for edge level RNN
-        self.embedding_size_edge_level_rnn = 16  # the size for edge level RNN input
-        self.embedding_size_edge_output = 16  # the size of edge output embedding
+        self.hidden_size_edge_level_rnn = 16  # hidden size for edge level RNN
+        self.embedding_size_edge_level_rnn = 8  # the size for edge level RNN input
+        self.embedding_size_edge_output = 8  # the size of edge output embedding
 
         self.num_layers = 4  # Layers of rnn
         self.batch_size = 32  # normal: 32, and the rest should be changed accordingly
@@ -66,7 +66,7 @@ class Args:
         self.num_workers = 8  # num workers to load data, default 4
         self.epochs = 10
 
-        self.lr = 0.003  # Learning rate
+        self.lr = 1e-4  # Learning rate
         # Learning rate decay factor at each milestone (no. of epochs)
         self.gamma = 0.3
         self.milestones = [100, 200, 400, 800]  # List of milestones

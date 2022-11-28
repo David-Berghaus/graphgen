@@ -23,7 +23,7 @@ class ArgsEvaluate():
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        model_folder = "GraphRNN_Ramsey_2022-11-28 12:56:52/"
+        model_folder = "GraphRNN_Ramsey_2022-11-28 13:19:46/"
         latest_model_index = get_highest_file_ending_number(args.model_save_path+model_folder, "GraphRNN_Ramsey")
         model_name = model_folder + "GraphRNN_Ramsey_" + str(latest_model_index) + ".dat"
 
