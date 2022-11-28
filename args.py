@@ -63,7 +63,7 @@ class Args:
         self.batch_size = 32  # normal: 32, and the rest should be changed accordingly
 
         # training config
-        self.num_workers = 8  # num workers to load data, default 4
+        self.num_workers = 24  # num workers to load data, default 4
         self.epochs = 10
 
         self.lr = 1e-4  # Learning rate
