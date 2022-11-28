@@ -52,12 +52,12 @@ class Args:
 
         # Specific to GraphRNN
         # Model parameters
-        self.hidden_size_node_level_rnn = 128  # hidden size for node level RNN
-        self.embedding_size_node_level_rnn = 64  # the size for node level RNN input
-        self.embedding_size_node_output = 64  # the size of node output embedding
-        self.hidden_size_edge_level_rnn = 16  # hidden size for edge level RNN
-        self.embedding_size_edge_level_rnn = 8  # the size for edge level RNN input
-        self.embedding_size_edge_output = 8  # the size of edge output embedding
+        self.hidden_size_node_level_rnn = 256  # hidden size for node level RNN
+        self.embedding_size_node_level_rnn = 128  # the size for node level RNN input
+        self.embedding_size_node_output = 128  # the size of node output embedding
+        self.hidden_size_edge_level_rnn = 32  # hidden size for edge level RNN
+        self.embedding_size_edge_level_rnn = 16  # the size for edge level RNN input
+        self.embedding_size_edge_output = 16  # the size of edge output embedding
 
         self.num_layers = 4  # Layers of rnn
         self.batch_size = 32  # normal: 32, and the rest should be changed accordingly
