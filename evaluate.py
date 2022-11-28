@@ -1,5 +1,6 @@
 import os
 import random
+import re
 import shutil
 from statistics import mean
 import torch
@@ -22,7 +23,10 @@ class ArgsEvaluate():
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        model_name = "GraphRNN_Ramsey_2022-11-22 09:58:20/GraphRNN_Ramsey_0.dat"
+        model_folder = "GraphRNN_Ramsey_2022-11-28 12:56:52/"
+        latest_model_index = get_highest_file_ending_number(args.model_save_path+model_folder, "GraphRNN_Ramsey")
+        model_name = model_folder + "GraphRNN_Ramsey_" + str(latest_model_index) + ".dat"
+        print("Model Name: ", model_name)
 
         self.model_path = args.model_save_path + model_name 
 
@@ -55,6 +59,13 @@ class ArgsEvaluate():
         self.current_graphs_save_path = self.graphs_save_path + self.train_args.fname + '_' + \
             self.train_args.time + '/' + str(self.num_epochs) + '/'
 
+def get_highest_file_ending_number(path, file_start, file_type=".dat"):
+    maxn = 0
+    list_of_files = [f.strip(file_type) for f in os.listdir(path) if f.endswith(file_type) and f.startswith(file_start)]
+    for file in list_of_files:
+        num = get_trailing_number(file)
+        maxn = num if num > maxn else maxn
+    return maxn
 
 def patch_graph(graph):
     for u in graph.nodes():

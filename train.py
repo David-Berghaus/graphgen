@@ -114,6 +114,10 @@ def train(args, dataloader_train, model, feature_map, dataloader_validate=None, 
                 print('Epoch: {}/{}, validation loss: {:.6f}'.format(
                     epoch, args.epochs, loss_validate))
 
+    print("args.save_model", args.save_model)
+    print("cem_iteration_count", cem_iteration_count)
+    print("args.epochs_save", args.epochs_save)
+    print("cem_iteration_count args.epochs_save: ", cem_iteration_count % args.epochs_save)
     if args.save_model and cem_iteration_count % args.epochs_save == 0:
         save_model(cem_iteration_count, args, model, optimizer,
                 scheduler, feature_map=feature_map)
