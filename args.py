@@ -34,7 +34,7 @@ class Args:
         self.clean_temp = False
 
         # Whether to use tensorboard for logging
-        self.log_tensorboard = True
+        self.log_tensorboard = False
 
         # Algorithm Version - # Algorithm Version - GraphRNN  | DFScodeRNN (GraphGen) | DGMG (Deep GMG)
         self.note = 'GraphRNN'
@@ -63,7 +63,7 @@ class Args:
         self.batch_size = 32  # normal: 32, and the rest should be changed accordingly
 
         # training config
-        self.num_workers = 24  # num workers to load data, default 4
+        self.num_workers = 8  # num workers to load data, default 4
         self.epochs = 10
 
         self.lr = 0.003  # Learning rate
