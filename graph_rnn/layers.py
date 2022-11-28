@@ -141,7 +141,7 @@ class RNN(nn.Module):
 
         if input_len is not None:
             input = pack_padded_sequence(
-                input, input_len, batch_first=True, enforce_sorted=False)
+                input, input_len.to('cpu'), batch_first=True, enforce_sorted=False)
 
         output, self.hidden = self.rnn(input, self.hidden)
 
