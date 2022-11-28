@@ -26,7 +26,6 @@ class ArgsEvaluate():
         model_folder = "GraphRNN_Ramsey_2022-11-28 12:56:52/"
         latest_model_index = get_highest_file_ending_number(args.model_save_path+model_folder, "GraphRNN_Ramsey")
         model_name = model_folder + "GraphRNN_Ramsey_" + str(latest_model_index) + ".dat"
-        print("Model Name: ", model_name)
 
         self.model_path = args.model_save_path + model_name 
 
