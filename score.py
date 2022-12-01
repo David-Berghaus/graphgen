@@ -21,10 +21,6 @@ def get_clique_count(G_nx, k): #See: https://stackoverflow.com/a/58782120
 #     m = len(maximal_cliques[0])
 #     return n*comb(m, k, exact=True)
 
-def is_complete_graph(G_nx): #https://stackoverflow.com/a/66182770
-    N = len(G_nx) - 1
-    return not any(n in nbrdict or len(nbrdict)!=N for n, nbrdict in G_nx.adj.items())
-
 def score_graph(args, G):
     clique_sizes = args.clique_sizes
     num_edge_labels = args.num_edge_labels
@@ -44,11 +40,8 @@ def score_graph(args, G):
     simple_graphs = [simple_graph for simple_graph in simple_graphs]
 
     assert len(clique_sizes) == len(simple_graphs)
-    INF = 9223372036854775807
     score = 0
     for i in range(len(clique_sizes)):
-        if is_complete_graph(simple_graphs[i]) == False: #We only want to score complete graphs
-            return -INF
         score += get_clique_count(simple_graphs[i], clique_sizes[i])
     return -score #We want to maximize the score
 
