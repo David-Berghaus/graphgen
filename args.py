@@ -42,7 +42,7 @@ class Args:
         # Check datasets/process_dataset for datasets
         # Select dataset to train the model
         self.graph_type = 'Ramsey'
-        self.num_graphs = 1024  # Set it None to take complete dataset
+        self.num_graphs = 256  # Set it None to take complete dataset
 
         # Whether to produce networkx format graphs for real datasets
         self.produce_graphs = True
@@ -66,7 +66,7 @@ class Args:
         self.num_workers = 24  # num workers to load data, default 4
         self.epochs = 10
 
-        self.lr = 1e-4  # Learning rate
+        self.lr = 1e-6  # Learning rate
         # Learning rate decay factor at each milestone (no. of epochs)
         self.gamma = 0.3
         self.milestones = [100, 200, 400, 800]  # List of milestones
