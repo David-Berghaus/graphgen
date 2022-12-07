@@ -50,7 +50,7 @@ def evaluate_loss(args, model, data, feature_map):
     edge_mat_packed = pack_padded_sequence(
         x[:, :, len_node_vec: min(
             x_len_max - 1, num_nodes_to_consider) * len_edge_vec + len_node_vec],
-        x_len, batch_first=True)
+        x_len.to('cpu'), batch_first=True)
 
     edge_mat, _ = edge_mat_packed.data, edge_mat_packed.batch_sizes
 
@@ -91,7 +91,7 @@ def evaluate_loss(args, model, data, feature_map):
     # Prepare hidden state for edge level RNN similiar to edge_mat
     # Ignoring the last graph level decoder END token output (all 0's)
     hidden_edge = pack_padded_sequence(
-        hidden_edge, x_len, batch_first=True).data
+        hidden_edge, x_len.to('cpu'), batch_first=True).data
     idx = torch.LongTensor(
         [i for i in range(hidden_edge.size(0) - 1, -1, -1)]).to(args.device)
     hidden_edge = hidden_edge.index_select(0, idx)
@@ -110,10 +110,10 @@ def evaluate_loss(args, model, data, feature_map):
 
     # cleaning the padding i.e setting it to zero
     x_pred_node = pack_padded_sequence(
-        x_pred_node, x_len + 1, batch_first=True)
+        x_pred_node, (x_len + 1).to('cpu'), batch_first=True)
     x_pred_node, _ = pad_packed_sequence(x_pred_node, batch_first=True)
     x_pred_edge = pack_padded_sequence(
-        x_pred_edge, x_edge_len, batch_first=True)
+        x_pred_edge, x_edge_len.to('cpu'), batch_first=True)
     x_pred_edge, _ = pad_packed_sequence(x_pred_edge, batch_first=True)
 
     # Loss evaluation & backprop

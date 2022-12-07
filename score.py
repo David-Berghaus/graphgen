@@ -5,6 +5,7 @@ from utils import MyGraph
 
 import networkx as nx
 from networkx.algorithms.operators.unary import complement
+from networkx.algorithms.components.connected import is_connected
 
 def get_clique_count(G_nx, k): #See: https://stackoverflow.com/a/58782120
     i = 0
@@ -40,8 +41,11 @@ def score_graph(args, G):
     simple_graphs = [simple_graph for simple_graph in simple_graphs]
 
     assert len(clique_sizes) == len(simple_graphs)
+    INF = 9223372036854775807
     score = 0
     for i in range(len(clique_sizes)):
+        if not is_connected(simple_graphs[i]):
+            return -INF
         score += get_clique_count(simple_graphs[i], clique_sizes[i])
     return -score #We want to maximize the score
 
